@@ -1,0 +1,75 @@
+# 1. Cria o arquivo export.html com o conteúdo POC
+cat > export.html << 'EOF'
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Exportar Clarity → CSV</title>
+</head>
+<body>
+  <h1>Exportar cliques “download_click” para CSV</h1>
+  <button id="btnExport">Gerar CSV</button>
+  <pre id="log" style="white-space: pre-wrap; margin-top:1em;"></pre>
+  <script>
+  (function(){
+    const projectId = 'rexwxue4kb';
+    const apiToken  = 'SEU_API_TOKEN_AQUI';
+    const eventName = 'download_click';
+    const startDate = '2025-01-01';
+    const endDate   = new Date().toISOString().slice(0,10);
+    const log = msg => document.getElementById('log').textContent += msg + '\\n';
+
+    document.getElementById('btnExport').addEventListener('click', async function(){
+      this.disabled = true;
+      log('⏳ Buscando dados no Clarity…');
+
+      // monta URL da API
+      const base = 'https://www.clarity.ms/export-data/api/v1/project-live-insights';
+      const qs = new URLSearchParams({ projectId, startDate, endDate, eventName, dimension:'URL', interval:'day' });
+      const realUrl = base + '?' + qs;
+      // usa proxy para evitar CORS apenas na POC
+      const proxy  = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(realUrl);
+
+      try {
+        const res  = await fetch(proxy, { headers:{ 'Authorization':'Bearer '+apiToken } });
+        if (!res.ok) throw new Error(res.status+' '+res.statusText);
+        const json = await res.json();
+        log('✅ Dados recebidos, montando CSV…');
+
+        // extrai métrica “Occurrences”
+        const m = json.find(x=>x.metricName==='Occurrences')||json[0];
+        const mes = new Date().toISOString().slice(0,7);
+        const csv = ['mes_ano,nomearquivo,url,cliques']
+          .concat(
+            m.information.map(i => {
+              const url = i.URL;
+              const c   = i.totalOccurrenceCount||0;
+              const n   = url.split('/').pop();
+              return [mes,n,url,c].join(',');
+            })
+          ).join('\\n');
+
+        const blob = new Blob([csv],{type:'text/csv'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'downloads.csv';
+        a.click();
+        log('📥 CSV pronto!');
+      } catch(e) {
+        log('❌ Erro: '+e.message);
+      }
+    });
+  })();
+  </script>
+</body>
+</html>
+EOF
+
+# 2. Adiciona, commita e envia para GitHub
+git add export.html
+git commit -m "chore: add export.html POC Clarity"
+git push origin main
+
+# Pronto: aguarde alguns segundos e abra
+# https://SEU_USUARIO.github.io/poc-clarity/export.html
