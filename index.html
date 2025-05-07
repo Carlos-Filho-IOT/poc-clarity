@@ -3,19 +3,27 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>POC Clarity Downloads</title>
+  <title>POC PostHog Downloads</title>
 
-  <!-- Snippet fornecido do Microsoft Clarity -->
-  <script type="text/javascript">
-    (function(c,l,a,r,i,t,y){
-      c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-      t=l.createElement(r); t.async=1; t.src="https://www.clarity.ms/tag/"+i;
-      y=l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "rexwxue4kb");
+  <!-- 1) PostHog snippet -->
+  <script>
+  !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){
+    function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){
+      t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",
+    p.async=!0,p.src="https://cdn.posthog.com/posthog.js",r=t.getElementsByTagName("script")[0],
+    r.parentNode.insertBefore(p,r);var u=e;"undefined"!=typeof a?u=e[a]=[]:a="posthog";u.people=u.people||[],
+    u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},
+    u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once register register_once unregister opt_in_capturing opt_out_capturing has_opted_out_capturing clear_opt_in_out_capturing".split(" ");
+    for(n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+  
+  // 2) Inicializa com a sua Team API Key
+  posthog.init('phc_Q3qbSsR6ZeHVTN3ofdcZUG4PtwYxyjulQK9ljrsNCpz', {
+    api_host: 'https://app.posthog.com'
+  });
   </script>
 </head>
 <body>
-  <h1>Checklists Lei 14.133/21 (POC Clarity)</h1>
+  <h1>Checklists Lei 14.133/21 (POC PostHog)</h1>
   <ul>
     <li>
       <a href="https://pge.rj.gov.br/minutas-padrao-lei-1413321"
@@ -31,28 +39,24 @@
         Download Checklists
       </a>
     </li>
-    <!-- adicione quantos itens quiser, sempre com data-file -->
   </ul>
 
   <script>
-    // Para cada botão/link de download, dispara um Smart Event no Clarity
+    // 3) Captura todos os cliques e envia para o PostHog
     document.querySelectorAll('.download-btn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
+      btn.addEventListener('click', e => {
         e.preventDefault();
+        const fileName = btn.dataset.file;
+        const fileUrl  = btn.href;
 
-        const fileName = this.dataset.file;
-        const url      = this.href;
-
-        // disparamos o evento customizado 'download_click'
-        window.clarity('event', 'download_click', {
+        // dispara evento customizado
+        posthog.capture('download_click', {
           file_name: fileName,
-          file_url: url
+          file_url:  fileUrl
         });
 
-        // após um pequeno delay, seguimos para o link
-        setTimeout(() => {
-          window.location.href = url;
-        }, 200);
+        // navega após um breve delay
+        setTimeout(() => window.location.href = fileUrl, 150);
       });
     });
   </script>
