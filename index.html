@@ -1,27 +1,35 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>POC PostHog Downloads</title>
 
-  <!-- 1) PostHog snippet -->
+  <!-- 1) Snippet oficial do PostHog (copiado exatamente do painel) -->
   <script>
-  !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){
-    function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){
-      t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",
-    p.async=!0,p.src="https://cdn.posthog.com/posthog.js",r=t.getElementsByTagName("script")[0],
-    r.parentNode.insertBefore(p,r);var u=e;"undefined"!=typeof a?u=e[a]=[]:a="posthog";u.people=u.people||[],
-    u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},
-    u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once register register_once unregister opt_in_capturing opt_out_capturing has_opted_out_capturing clear_opt_in_out_capturing".split(" ");
-    for(n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-  
-  // 2) Inicializa com a sua Team API Key
-  posthog.init('phc_Q3qbSsR6ZeHVTN3ofdcZUG4PtwYxyjulQK9ljrsNCpz', {
-    api_host: 'https://app.posthog.com'
-  });
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){
+      function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){
+        t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",
+      p.crossOrigin="anonymous",p.async=!0,
+      // carrega o core do PostHog
+      p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",
+      (r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);
+      var u=e;
+      for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){
+        var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},
+      u.people.toString=function(){return u.toString(1)+".people (stub)"},
+      o="init me ws ys ps bs capture je Di ks register register_once register_for_session unregister unregister_for_session Ps getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey canRenderSurveyAsync identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty Es $s createPersonProfile Is opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing Ss debug xs getPageViewId captureTraceFeedback captureTraceMetric".split(" "),
+      n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    
+    // 2) Inicialize com sua API Key e host
+    posthog.init('phc_Q3qbSsR6ZeHVTN3ofdcZUG4PtwYxyjulQK9ljrsNCpz', {
+      api_host: 'https://us.i.posthog.com',
+      person_profiles: 'identified_only'
+    });
   </script>
+  <!-- Fim do snippet do PostHog -->
 </head>
+
 <body>
   <h1>Checklists Lei 14.133/21 (POC PostHog)</h1>
   <ul>
@@ -42,20 +50,21 @@
   </ul>
 
   <script>
-    // 3) Captura todos os cliques e envia para o PostHog
+    // 3) Quando o usuário clicar num link download-btn, dispare o evento:
     document.querySelectorAll('.download-btn').forEach(btn => {
       btn.addEventListener('click', e => {
-        e.preventDefault();
+        e.preventDefault();  // evita navegação imediata
+
         const fileName = btn.dataset.file;
         const fileUrl  = btn.href;
 
-        // dispara evento customizado
+        // dispara evento customizado no PostHog
         posthog.capture('download_click', {
           file_name: fileName,
           file_url:  fileUrl
         });
 
-        // navega após um breve delay
+        // após 150ms, navega para o link
         setTimeout(() => window.location.href = fileUrl, 150);
       });
     });
